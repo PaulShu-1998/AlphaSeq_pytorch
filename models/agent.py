@@ -10,14 +10,25 @@ class Agent:
     def __init__(self):
         """Create an agent and initialize the networks"""
 
-        self.extractor = Extractor(INPLANES, OUTPLANES_MAP).to(DEVICE)
-        self.value_net = ValueNet(OUTPLANES_MAP).to(DEVICE)
-        self.policy_net = PolicyNet(OUTPLANES_MAP).to(DEVICE)
+        self.extractor = Extractor(INPLANES, OUTPLANES_MAP)  # .to(DEVICE)
+        self.value_net = ValueNet(OUTPLANES_MAP)  # .to(DEVICE)
+        self.policy_net = PolicyNet(OUTPLANES_MAP)  # .to(DEVICE)
+
+    def to_device(self):
+        self.extractor.to(DEVICE)
+        self.value_net.to(DEVICE)
+        self.policy_net.to(DEVICE)
+
+    def to_cpu(self):
+        self.extractor.to(torch.device("cpu"))
+        self.value_net.to(torch.device("cpu"))
+        self.policy_net.to(torch.device("cpu"))
 
     def predict(self, state):
-        feature_maps = self.extractor(state)
-        value = self.value_net(feature_maps)
-        probs = self.policy_net(feature_maps)
+        with torch.no_grad():
+            feature_maps = self.extractor(state)
+            value = self.value_net(feature_maps)
+            probs = self.policy_net(feature_maps)
         return value, probs
 
     def save_models(self, state, current_time):

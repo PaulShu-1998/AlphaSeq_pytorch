@@ -4,6 +4,7 @@ from gym import spaces, core
 import numpy as np
 from numpy.linalg import norm
 from const import q, M, N
+from copy import copy, deepcopy
 
 
 def cal_corelation(state):
@@ -46,7 +47,7 @@ class DiscreteCodebook(core.Env):
         self.state = np.zeros(self.observation_space.shape, dtype=np.int64)
         self.depth = 0
         self.illegal_moves = []
-        return self.state
+        return copy(self.state)
 
     def _get_reward(self, state):
         if self.depth == self.total_dep:
@@ -63,7 +64,7 @@ class DiscreteCodebook(core.Env):
             neg_act = np.copy(self.state[self.depth-1, ::])
             neg_act = (neg_act + 1) % q
             self.illegal_moves.append(np.sum(np.inner(neg_act, self.encode)))
-        return self.state
+        return copy(self.state)
 
     def _get_done(self):
         if self.depth == self.total_dep:
@@ -74,4 +75,16 @@ class DiscreteCodebook(core.Env):
         self.uB = value
 
     def get_illegal_moves(self):
-        return np.array(self.illegal_moves)
+        return np.array(copy(self.illegal_moves))
+
+    def get_state(self):
+        return copy(self.state)
+
+if __name__ == '__main__':
+    env = DiscreteCodebook()
+    env.reset()
+    is_done = False
+    while not is_done:
+        action = np.random.randint(0, q**N)
+        state, reward, is_done, _  = env.step(action)
+        print(state, reward, is_done)

@@ -35,13 +35,14 @@ class GameManager(multiprocessing.Process):
 
         while True:
             try:
+
                 next_task = self.game_queue.get()
 
                 # End the processes that are done
                 if next_task is None:
                     self.game_queue.task_done()
                     break
-
+                print("start")
                 answer = next_task()
                 self.game_queue.task_done()
                 self.result_queue.put(answer)

@@ -7,20 +7,15 @@ class BasicBlock(nn.Module):
     """Basic residual block with 2 convolutions and a skip connection before the last activation."""
     def __init__(self, inplanes, planes, stride=1):
         super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=2, bias=False)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
 
-    def forward(self, x):
-        residual = x
-        out = self.conv1(x)
-        out = F.relu(self.bn1(out))
-        out = self.conv2(out)
-        out = F.relu(self.bn2(out))
-        out += residual
-        out = F.relu(out)
-        return out
+    def forward(self, X):
+        Y = F.relu(self.bn1(self.conv1(X)))
+        Y = self.bn2(self.conv2(Y))
+        return F.relu(Y + X)
 
 
 class Extractor(nn.Module):
@@ -29,7 +24,7 @@ class Extractor(nn.Module):
     """
     def __init__(self, inplanes, outplanes):
         super(Extractor, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, outplanes, stride=1, kernel_size=3, padding=2, bias=False)
+        self.conv1 = nn.Conv2d(inplanes, outplanes, stride=1, kernel_size=3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(outplanes)
 
         for block in range(BLOCKS):

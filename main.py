@@ -5,12 +5,15 @@ import os
 from lib.train import train
 from lib.search import self_play
 from lib.process import MyPool
+import signal
 
 
 # @click.command()
 # @click.option("--folder", default=-1)
 # @click.option("--version", default=False)
 def main(folder=-1, version=False):
+    # Start method for PyTorch
+    # multiprocessing.set_start_method('spawn')
 
     # Create folder name if not provided
     if folder == -1:
@@ -18,16 +21,19 @@ def main(folder=-1, version=False):
     else:
         current_time = str(folder)
 
+    # Catch SIGNINT
+    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     pool = MyPool(2)
+    signal.signal(signal.SIGINT, original_sigint_handler)
 
     try:
         self_play_proc = pool.apply_async(self_play, args=(current_time, version,))
-        train_proc = pool.apply_async(train, args=(current_time, version,))
+        # train_proc = pool.apply_async(train, args=(current_time, version,))
 
         # Comment one line or the other to get the stack trace
         # Must add a loooooong timer otherwise signals are not caught
         self_play_proc.get()
-        # train_proc.get()
+        # train_proc.get(6000000)
 
     except KeyboardInterrupt:
         pool.terminate()
@@ -37,6 +43,6 @@ def main(folder=-1, version=False):
 
 
 if __name__ == "__main__":
-    main()
+    main("1585751474", 1)
 
 

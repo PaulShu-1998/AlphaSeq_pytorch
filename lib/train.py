@@ -208,7 +208,7 @@ def train(current_time, loaded_version):
                     pool.join()
                 pool = MyPool(1)
                 try:
-                    pool.apply_async(evaluate, args=(pending_agent, best_agent), callback=new_agent)
+                    pool.apply_async(evaluate, args=(pending_agent.to_cpu(), best_agent.to_cpu()), callback=new_agent)
                 except Exception as e:
                     client.close()
                     pool.terminate()
@@ -218,7 +218,7 @@ def train(current_time, loaded_version):
                 'reward': reward,
                 'move': move
             }
-            loss = train_epoch(agent, optimizer, example, criterion)
+            loss = train_epoch(agent.to_device(), optimizer, example, criterion)
             running_loss.append(loss)
 
             # Print running loss

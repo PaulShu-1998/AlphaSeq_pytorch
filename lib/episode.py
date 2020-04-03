@@ -25,7 +25,7 @@ class Episode:
     def _step(self, state):
         """ Choose a move depending on MCTS or not """
         if self.mcts:
-            probs, action = self.mcts.search(self.agent)
+            probs, action = self.mcts.search(self.env, self.agent)
         else:
             _, probs = self.agent.predict(state)
             probs = probs[0].cpu().data.numpy()
@@ -41,17 +41,16 @@ class Episode:
         """
 
         is_done = False
-        state = self.env.reset()
+        state = self.env.get_state()
         dataset = []
-
+        cnt = 1
         while not is_done:
             # For self-play
-            state = _prepare_state(state)
+            # state = _prepare_state(state)
             next_state, reward, is_done, probs, action = self._step(state)
-            dataset.append((state.cpu().data.numpy(), probs))
             state = next_state
+            dataset.append((state, probs))
 
         # Pickle the result because multiprocessing
         print("[EVALUATION] Episode %d done, reward %s" % (self.id, reward))
-
         return pickle.dumps((dataset, reward))

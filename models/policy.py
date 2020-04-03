@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from const import N, M, q
+from const import N, M, OUTPLANES
 
 
 class PolicyNet(nn.Module):
@@ -14,7 +14,7 @@ class PolicyNet(nn.Module):
         self.conv = nn.Conv2d(inplanes, 1, kernel_size=1)
         self.bn = nn.BatchNorm2d(1)
         self.logsoftmax = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(N*M, q**N)
+        self.fc = nn.Linear(N*M, OUTPLANES)
 
     def forward(self, x):
         """

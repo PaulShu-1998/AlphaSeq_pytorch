@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import tanh
 from const import N, M
 
 
@@ -27,5 +28,6 @@ class ValueNet(nn.Module):
         x = F.relu(self.bn(self.conv(x)))
         x = x.view(-1, N*M)
         x = F.relu(self.fc1(x))
-        reward = F.tanh(self.fc2(x))
+        reward = tanh(self.fc2(x))
+
         return reward
