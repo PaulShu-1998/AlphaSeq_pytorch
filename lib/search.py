@@ -27,23 +27,28 @@ def self_play(current_time, loaded_version):
 
         # Load the agent when restarting training
         if loaded_version:
-            agent, checkpoint = load_agent(current_time, loaded_version)
-            game_id = collection.find().count()
+            new_agent, checkpoint = load_agent(current_time, loaded_version)
+            game_id = collection.count_documents({})
             current_version = checkpoint['version'] + 1
             loaded_version = False
         else:
-            agent, checkpoint = get_agent(current_time, current_version)
-            if agent:
+            new_agent, checkpoint = get_agent(current_time, current_version)
+            if new_agent:
                 current_version = checkpoint['version'] + 1
 
         # Waiting for the first player to be saved
         print("[PLAY] Current improvement level: %d" % current_version)
-        if current_version == 1 and not agent:
+        if current_version == 1 and not agent and not new_agent:
             print("[PLAY] Waiting for first agent")
-            time.sleep(5)
+            time.sleep(2)
             continue
 
+        if new_agent:
+            agent = new_agent
+            print("[PLAY] New agent !")
+
         # Create the self-play match queue of processes
+        agent.to_cpu()
         queue, results = create_episodes(agent, cores=PARALLEL_SELF_PLAY, match_number=SELF_PLAY_MATCH)
         print("[PLAY] Starting to fetch fresh episodes")
         start_time = timeit.default_timer()
@@ -55,7 +60,7 @@ def self_play(current_time, loaded_version):
             for _ in range(SELF_PLAY_MATCH):
                 result = results.get()
                 if result:
-                    collection.insert({
+                    collection.insert_one({
                         "game": result,
                         "id": game_id
                     })
@@ -71,7 +76,7 @@ def play(agent):
     """ Game between two players, for evaluation """
 
     # Create the evaluation match queue of processes
-    queue, results = create_episodes(deepcopy(agent), cores=PARALLEL_EVAL, match_number=EVAL_MATCHES)
+    queue, results = create_episodes(deepcopy(agent), cores=PARALLEL_EVAL, match_number=EVAL_MATCHES, eval_flag=1)
     try:
         queue.join()
 
@@ -81,7 +86,7 @@ def play(agent):
         for idx in range(EVAL_MATCHES):
             result = results.get()
             if result:
-                final_result.append(pickle.loads(result))
+                final_result.append(pickle.loads(result)[1])
         print("[EVALUATION] Done fetching")
     finally:
         queue.close()

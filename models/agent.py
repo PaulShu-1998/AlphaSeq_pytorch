@@ -10,9 +10,9 @@ class Agent:
     def __init__(self):
         """Create an agent and initialize the networks"""
 
-        self.extractor = Extractor(INPLANES, OUTPLANES_MAP)  # .to(DEVICE)
-        self.value_net = ValueNet(OUTPLANES_MAP)  # .to(DEVICE)
-        self.policy_net = PolicyNet(OUTPLANES_MAP)  # .to(DEVICE)
+        self.extractor = Extractor(INPLANES, OUTPLANES_MAP).to(DEVICE)
+        self.value_net = ValueNet(OUTPLANES_MAP).to(DEVICE)
+        self.policy_net = PolicyNet(OUTPLANES_MAP).to(DEVICE)
 
     def to_device(self):
         self.extractor.to(DEVICE)
@@ -31,12 +31,19 @@ class Agent:
             probs = self.policy_net(feature_maps)
         return value, probs
 
+    def predict_train(self, state):
+        # self.to_device()
+        feature_maps = self.extractor(state)
+        value = self.value_net(feature_maps)
+        probs = self.policy_net(feature_maps)
+        return value, probs
+
     def save_models(self, state, current_time):
         for model in ["extractor", "policy_net", "value_net"]:
             self._save_checkpoint(getattr(self, model), model, state, current_time)
 
     def _save_checkpoint(self, model, filename, state, current_time):
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'saved_models', current_time)
+        dir_path = os.path.join('E:/Myproject/AlphaSeq_pytorch/', 'saved_models/', current_time)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 

@@ -1,8 +1,6 @@
 import multiprocessing
 import multiprocessing.pool
 from lib.episode import Episode
-import time
-from random import randint
 
 
 class NoDaemonProcess(multiprocessing.Process):
@@ -42,7 +40,7 @@ class GameManager(multiprocessing.Process):
                 if next_task is None:
                     self.game_queue.task_done()
                     break
-                print("start")
+
                 answer = next_task()
                 self.game_queue.task_done()
                 self.result_queue.put(answer)
@@ -50,7 +48,7 @@ class GameManager(multiprocessing.Process):
                 print("Game has thrown an error")
 
 
-def create_episodes(agent, cores=1, match_number=10):
+def create_episodes(agent, cores=1, match_number=10, eval_flag=0):
     """ Create the process queue """
 
     queue = multiprocessing.JoinableQueue()
@@ -65,7 +63,7 @@ def create_episodes(agent, cores=1, match_number=10):
         game_manager.start()
 
     for game_id in range(match_number):
-        queue.put(Episode(agent, game_id))
+        queue.put(Episode(agent, game_id, eval_flag))
 
     for _ in range(cores):
         queue.put(None)

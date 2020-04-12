@@ -1,5 +1,3 @@
-import torch
-import random
 from gym import spaces, core
 import numpy as np
 from numpy.linalg import norm
@@ -7,16 +5,16 @@ from const import q, M, N
 from copy import copy, deepcopy
 
 
-def cal_corelation(state):
-    real_state = np.round(np.cos(2 * state * np.pi/q), 15) + np.round(np.sin(2 * state * np.pi/q), 15)*1j
-    correlation = [np.matmul(real_state[i], real_state[j]) for i in range(N) for j in range(i)]
+def cal_corelation(state):  # 未加上conjugate
+    real_state = np.round(np.cos(2 * state * np.pi/q), 15)  # + np.round(np.sin(2 * state * np.pi/q), 15)*1j
+    correlation = [np.matmul(real_state[i], real_state[j]) for i in range(M) for j in range(i)]
     correlation = np.reshape(correlation, (1, np.shape(correlation)[0]))
     max_correla = norm(correlation, 1)
     return max_correla
 
 
 def decode_action(num, q):
-    action = np.empty((N, ), dtype=np.int64)
+    action = np.empty((N, ), dtype=np.int)
     for i in range(N):
         action[i] = num % q
         num //= q
@@ -27,12 +25,13 @@ class DiscreteCodebook(core.Env):
     """A discrete codebook environment for OpenAI gym"""
     def __init__(self):
         self.action_space = spaces.MultiDiscrete([q for _ in range(N)])
-        self.observation_space = spaces.Box(low=0, high=q-1, shape=(M, N), dtype=np.int64)
+        self.observation_space = spaces.Box(low=0, high=q-1, shape=(M, N), dtype=np.int)
         self.state = None
         self.depth = 0
         self.total_dep = M
         self.WB = N*np.sqrt((M - N) / (N * (M - 1)))
         self.uB = N
+        self.a = 2.0/((self.WB - self.uB)**2)
         self.illegal_moves = None
         self.encode = np.array([q ** i for i in range(N)])
 
@@ -52,7 +51,7 @@ class DiscreteCodebook(core.Env):
     def _get_reward(self, state):
         if self.depth == self.total_dep:
             max_correlation = cal_corelation(state)
-            reward = (self.uB+self.WB-2*max_correlation)/(self.uB-self.WB)
+            reward = self.a * (max_correlation-self.uB)**2 - 1
             return reward
         return 0
 

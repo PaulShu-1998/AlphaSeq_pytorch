@@ -2,19 +2,20 @@ import numpy as np
 import pickle
 from const import MCTS_FLAG, q, N
 from models.mcts import MCTS
-from .CodebookEnv import DiscreteCodebook
+from .CodebookEnv import DiscreteCodebook, cal_corelation
 from .utils import _prepare_state
+import time
 
 
 class Episode:
     """ A single process that is used to search by an agent """
 
-    def __init__(self, agent, id, mcts_flag=MCTS_FLAG):
+    def __init__(self, agent, id, eval_flag=0, mcts_flag=MCTS_FLAG):
         self.id = id + 1
         self.env = self._create_env()
         self.mcts = mcts_flag
         if mcts_flag:
-            self.mcts = MCTS()
+            self.mcts = MCTS(eval_flag)
         self.agent = agent
 
     def _create_env(self):
@@ -43,14 +44,20 @@ class Episode:
         is_done = False
         state = self.env.get_state()
         dataset = []
-        cnt = 1
+        reward = -1
+
         while not is_done:
             # For self-play
             # state = _prepare_state(state)
             next_state, reward, is_done, probs, action = self._step(state)
-            state = next_state
             dataset.append((state, probs))
-
+            state = next_state
+        cor = cal_corelation(state)
         # Pickle the result because multiprocessing
-        print("[EVALUATION] Episode %d done, reward %s" % (self.id, reward))
+        if reward > 0.9:
+            print("################Take caution!!!#####################")
+            print(state)
+            print("####################################################")
+            state.tofile("bestcodebook_{}.bin".format(str(int(time.time()))))
+        print("[EVALUATION] Episode %d done, reward %s, cor %s" % (self.id, reward, cor))
         return pickle.dumps((dataset, reward))

@@ -5,7 +5,7 @@ from collections import OrderedDict
 from numba import jit
 from copy import deepcopy
 from const import C_PUCT, EPS, ALPHA, MCTS_PARALLEL, MCTS_SIM, BATCH_SIZE_EVAL, DEVICE, q, M, N
-from lib.CodebookEnv import DiscreteCodebook
+from lib.utils import feature_extractor
 
 
 @jit(nopython=True)
@@ -84,8 +84,6 @@ class EvaluatorThread(threading.Thread):
             self.condition_search.acquire()
             while len(self.eval_queue) < MCTS_PARALLEL:
                 self.condition_search.wait()
-                # if len(self.eval_queue) == 0:
-                #     break
             self.condition_search.release()
 
             self.condition_eval.acquire()
@@ -95,7 +93,7 @@ class EvaluatorThread(threading.Thread):
 
                 # Predict the feature maps, policy and value
                 states = torch.tensor(np.array(list(self.eval_queue.values()))[0:max_len], dtype=torch.float32)
-                values, probs = self.agent.predict(states.view(-1, 1, M, N))
+                values, probs = self.agent.predict(states.view(-1, q, M, N))
 
                 # Replace the state with the result in the eval queue and notify all the threads that the result are available
                 for idx, i in zip(keys, range(max_len)):
@@ -139,7 +137,7 @@ class SearchTread(threading.Thread):
 
         if not is_done:
             self.condition_search.acquire()
-            self.eval_queue[self.thread_id] = state
+            self.eval_queue[self.thread_id] = feature_extractor(state, q)
             self.condition_search.notify()
             self.condition_search.release()
 
@@ -155,11 +153,11 @@ class SearchTread(threading.Thread):
             self.condition_eval.release()
 
             # Add noise in the root node
-            if not current_node.parent:
+            if not current_node.parent and self.mcts.eval_flag == 0:
                 probs = dirichlet_noise(probs)
 
             # Modify probability vector depending on valid moves and normalize after that
-            illegal_moves = self.env.get_illegal_moves()
+            illegal_moves = env.get_illegal_moves()
             if illegal_moves.any():
                 probs[illegal_moves] = 0
                 total = np.sum(probs)
@@ -183,10 +181,11 @@ class SearchTread(threading.Thread):
 
 
 class MCTS:
-    def __init__(self):
+    def __init__(self, eval_flag):
         self.root = Node()
         self.tau = 1
         self.count = 1
+        self.eval_flag = eval_flag
 
     def _softmax(self, action_scores):
         exp = np.exp(action_scores)
@@ -252,7 +251,7 @@ class MCTS:
 
         self.root = self.root.childrens[idx]
         self.count += 1
-        if self.count > M // 3:
+        if self.count > M - 2:
             self.tau = 0
 
         return next_probs, next_move

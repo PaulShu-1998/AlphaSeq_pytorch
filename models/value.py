@@ -15,8 +15,8 @@ class ValueNet(nn.Module):
         super(ValueNet, self).__init__()
         self.conv = nn.Conv2d(inplanes, 1, kernel_size=1)
         self.bn = nn.BatchNorm2d(1)
-        self.fc1 = nn.Linear(N*M, 64)
-        self.fc2 = nn.Linear(64, 1)
+        self.fc1 = nn.Linear(1*N*M, 256)
+        self.fc2 = nn.Linear(256, 1)
 
     def forward(self, x):
         """

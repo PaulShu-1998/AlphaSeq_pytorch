@@ -22,18 +22,18 @@ def main(folder=-1, version=False):
         current_time = str(folder)
 
     # Catch SIGNINT
-    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    # original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     pool = MyPool(2)
-    signal.signal(signal.SIGINT, original_sigint_handler)
+    # signal.signal(signal.SIGINT, original_sigint_handler)
 
     try:
         self_play_proc = pool.apply_async(self_play, args=(current_time, version,))
-        # train_proc = pool.apply_async(train, args=(current_time, version,))
-
+        train_proc = pool.apply_async(train, args=(current_time, version,))
+        # train(current_time, version)
         # Comment one line or the other to get the stack trace
         # Must add a loooooong timer otherwise signals are not caught
-        self_play_proc.get()
-        # train_proc.get(6000000)
+        self_play_proc.get(25200)
+        # train_proc.get(18000)
 
     except KeyboardInterrupt:
         pool.terminate()
@@ -43,6 +43,6 @@ def main(folder=-1, version=False):
 
 
 if __name__ == "__main__":
-    main("1585751474", 1)
+    main("1586332421", 38)
 
 

@@ -1,7 +1,14 @@
 import os
 import torch
 from models.agent import Agent
+import numpy as np
 
+
+def feature_extractor(state, q):
+    feature = []
+    for i in range(q):
+        feature.append((2 ** i & (1 << state)) // 2 ** i)
+    return np.array(feature)
 
 
 def _prepare_state(state):
@@ -35,7 +42,7 @@ def get_version(folder_path, version):
 def load_agent(folder, version):
     """ Load a player given a folder and a version """
 
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'saved_models')
+    path = os.path.join('E:/Myproject/AlphaSeq_pytorch/', 'saved_models/')
     if folder == -1:
         folders = os.listdir(path)
         folders.sort()
@@ -57,7 +64,7 @@ def load_agent(folder, version):
 def get_agent(current_time, version):
     """ Load the models of a specific player """
 
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'saved_models', str(current_time))
+    path = os.path.join('E:/Myproject/AlphaSeq_pytorch/', 'saved_models/', str(current_time))
     try:
         mod = os.listdir(path)
         models = list(filter(lambda model: (model.split('-')[0] == str(version)), mod))
