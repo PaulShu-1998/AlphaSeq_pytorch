@@ -77,3 +77,28 @@ def get_agent(current_time, version):
     agent = Agent()
     checkpoint = agent.load_models(path, models)
     return agent, checkpoint
+
+
+if __name__ == '__main__':
+    min = 100
+    sum = 0
+
+    def sum_all(s):
+        sum=0
+        for i in range(len(s)-1):
+            for j in range(i+1, len(s)):
+                sum += abs(s[i]-s[j]-2)
+        return sum
+
+    for a in range(4):
+        for b in range(4):
+            for c in range(4):
+                for d in range(4):
+                    for e in range(4):
+                        for f in range(4):
+                            s = [a, b, c, d, e, f]
+                            sum = sum_all(s)
+                            if sum <= min:
+                                min = sum
+                                print(s)
+                                print(sum)

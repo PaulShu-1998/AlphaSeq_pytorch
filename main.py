@@ -28,7 +28,7 @@ def main(folder=-1, version=False):
 
     try:
         self_play_proc = pool.apply_async(self_play, args=(current_time, version,))
-        train_proc = pool.apply_async(train, args=(current_time, version,))
+        # train_proc = pool.apply_async(train, args=(current_time, version,))
         # train(current_time, version)
         # Comment one line or the other to get the stack trace
         # Must add a loooooong timer otherwise signals are not caught
@@ -43,6 +43,6 @@ def main(folder=-1, version=False):
 
 
 if __name__ == "__main__":
-    main("1586332421", 38)
+    main("1586864647", 1)
 
 

@@ -60,5 +60,7 @@ if __name__ == '__main__':
     #
     # print(a)
     # print(feature_extractor(a, 4))
-    a = np.zeros((16,6),dtype=np.int64)
-    print(np.conjugate(a))
+    # a = np.zeros((16,6),dtype=np.int64)
+    # print(np.conjugate(a))
+    a = np.array([[0, 0, 0, 0, 0, 0], [2, 2, 0, 0, 0, 0]])
+    print(cal_corelation(a, 4))

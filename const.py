@@ -20,11 +20,11 @@ M = 16
 # number of root
 q = 2
 # Learning rate
-LR = 0.01
+LR = 0.001
 # Maximum ratio that can be replaced in the rotation buffer
 MAX_REPLACEMENT = 1.0
 # Number of MCTS simulation
-MCTS_SIM = 400
+MCTS_SIM = 64
 # Exploration constant
 C_PUCT = 0.2
 # L2 Regularization
@@ -46,9 +46,9 @@ TEMPERATURE_MOVE = 5
 
 # ###TRAINING
 # Number of moves to consider when creating the batch
-MOVES = 512
+MOVES = 100
 # Number of mini-batch before evaluation during training
-BATCH_SIZE = 256
+BATCH_SIZE = 64
 # Number of channels of the output feature maps
 OUTPLANES_MAP = 256
 # Shape of the input state
@@ -60,17 +60,17 @@ BLOCKS = 2
 # Number of hidden layer in policy net
 A2C = 3
 # Number of training step before evaluating
-TRAIN_STEPS = 20 * BATCH_SIZE
+TRAIN_STEPS = 6 * BATCH_SIZE
 # Optimizer
 ADAM = True
 # Learning rate annealing factor
 LR_DECAY = 0.1
 # Learning rate annealing interval
-LR_DECAY_ITE = 100 * TRAIN_STEPS
+LR_DECAY_ITE = 20 * TRAIN_STEPS
 # Print the loss
 LOSS_TICK = BATCH_SIZE*5
 # Refresh the dataset
-REFRESH_TICK = 10 * BATCH_SIZE
+REFRESH_TICK = 3 * BATCH_SIZE
 
 # ###EVALUATION
 # Number of matches against its old version to evaluate the newly trained network
